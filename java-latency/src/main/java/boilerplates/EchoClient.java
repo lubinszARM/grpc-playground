@@ -62,11 +62,19 @@ public class EchoClient {
 //        .channelType(EpollDomainSocketChannel.class)
 //        .usePlaintext(true)
 //        .build();
-    this( ManagedChannelBuilder.forAddress(host, port)
+/*    this( ManagedChannelBuilder.forAddress(host, port)
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
         .usePlaintext(true)
         .build());
+*/
+
+	this(NettyChannelBuilder.forAddress(new DomainSocketAddress("/tmp/test.socket"))
+        .eventLoopGroup(new EpollEventLoopGroup())
+        .channelType(EpollDomainSocketChannel.class)
+        .usePlaintext(true)
+        .build());
+
   }
 
   /**

@@ -26,6 +26,10 @@ import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import io.netty.channel.epoll.EpollServerDomainSocketChannel;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.unix.DomainSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +45,41 @@ public class EchoServer {
 
   private void start() throws IOException {
     /* The port on which the server should run */
-    int port = 50051;
-    server =
+//    int port = 50051;
+  /*  server =
         NettyServerBuilder.forAddress(new InetSocketAddress("localhost", port))
         .addService(new EchoImpl())
         .build()
         .start();
-    logger.info("Server started, listening on " + port);
+		*/
+	//EpollEventLoopGroup group = new EpollEventLoopGroup();
+/* server = NettyServerBuilder.forAddress(new DomainSocketAddress("/tmp/test.socket"))
+        .addService(new EchoImpl())
+        .build()
+        .start();
+*/
+	EpollEventLoopGroup group = new EpollEventLoopGroup();
+
+ server =
+      NettyServerBuilder
+          .forAddress(new DomainSocketAddress("/tmp/test.socket"))
+          .channelType(EpollServerDomainSocketChannel.class)
+		.workerEventLoopGroup(group)
+    .bossEventLoopGroup(group)
+		  .addService(new EchoImpl())
+          .build()
+		  .start();
+
+
+	 /*
+	server = 
+	    NettyChannelBuilder.forAddress(new DomainSocketAddress("/tmp/test.socket"))
+        .eventLoopGroup(new EpollEventLoopGroup())
+        .channelType(EpollDomainSocketChannel.class)
+        .usePlaintext(true)
+        .build();
+*/
+    logger.info("Server started, listening on /tmp/test.socket");
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
